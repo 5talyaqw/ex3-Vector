@@ -1,6 +1,5 @@
 #include "Vector.h"
 #include <windows.h> // WinApi header - needed for setting console color
-#include <random>
 #include <iostream>
 #include <string>
 
@@ -33,18 +32,8 @@ void set_console_color(unsigned int color)
 	SetConsoleTextAttribute(hConsole, color);
 }
 
-// gets a random number between a range of numbers
-int getRandomInt(int min, int max)
-{
-	std::random_device rd;     // only used once to initialise (seed) engine
-	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-	std::uniform_int_distribution<int> uni(min, max); // guaranteed unbiased
 
-	auto random_integer = uni(rng);
-	return random_integer;
-}
-
-std::string getVectorString(const Vector& v)
+std::string getVectorString(const Vector v)
 {
 	return
 		"[capacity: " + std::to_string(v.capacity()) +
@@ -52,242 +41,212 @@ std::string getVectorString(const Vector& v)
 		", resize factor: " + std::to_string(v.resizeFactor()) + "]";
 }
 
-void addRandomElementsToVector(Vector& v, const int numberOfElements)
+void addElementsToVector(Vector& v, const int elements[], const int numberOfElements)
 {
 	int element;
 	for (unsigned int i = 0; i < numberOfElements; i++)
 	{
-		element = getRandomInt(0, 100000);
-		v.push_back(element);
+		v.push_back(elements[i]);
 	}
 }
 
-std::string getPoppedElementsString(Vector& v, const int numberOfElements)
+std::string getVectorElementsString(Vector& v)
 {
 	std::string result = "";
-	int element;
-	for (unsigned int i = 0; i < numberOfElements; i++)
+	for (unsigned int i = 0; i < v.size(); i++)
 	{
-		element = v.pop_back();
-		if (element < 0)
-		{
-			return "ERROR " + std::to_string(element);
-		}
-		result += std::to_string(element);
+		result += std::to_string(v[i]) + ",";
 	}
+	if (v.size() > 0)
+		result = result.substr(0, result.length() - 1);
 	return result;
 }
 
-bool test2AddElements()
+
+bool test4()
 {
 	bool result = false;
 
 	try
 	{
-		// Tests Ex3 part 2 - push_back(), pop_back(), reserve()
+		// Tests Ex3 part 4 - operator[] , assign, resize
 
-		set_console_color(PURPLE);
+		set_console_color(YELLOW);
 		cout <<
-			"********************************************\n" <<
-			"Test 2 - push_back(), pop_back(), reserve() \n" <<
-			"********************************************\n" << endl;
+			"************************************\n" <<
+			"Test 4 - resize, assign, operator[] \n" <<
+			"************************************\n" << endl;
 		set_console_color(WHITE);
 
 		cout <<
 			"Initializing Vector v1 with n=5 ... \n" << endl;
 
-		cout <<
-			"Adding 3 elements to vector v1 ... \n" << endl;
-
 		Vector v1(5);
-		addRandomElementsToVector(v1, 3);
 
-		std::string expected = "[capacity: 5, size: 3, resize factor: 5]";
-		std::string got = getVectorString(v1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		cout <<
+			"Adding 10 elements to vector v1 (1,2, ... ,10) ... \n" << endl;
+
+		const int v1elements[] = { 1,2,3,4,5,6,7,8,9,10 };
+		addElementsToVector(v1, v1elements, 10);
+
+		cout <<
+			"Initializing Vector v2 with n=7 ... \n" << endl;
+
+		Vector v2(7);
+
+		cout <<
+			"Adding 10 elements to vector v2 (11,22, ... ,99,110) ... \n" << endl;
+
+		const int v2elements[] = { 11,22,33,44,55,66,77,88,99,110 };
+		addElementsToVector(v2, v2elements, 10);
+
+		std::string expected = "v1: 1,2,3,4,5,6,7,8,9,10\n";
+		expected += "v2: 11,22,33,44,55,66,77,88,99,110";
+		std::string got = "v1: " + getVectorElementsString(v1) + "\nv2: " + getVectorElementsString(v2);
+		cout << "Expected:\n" << expected << endl;
+		cout << "Got     :\n" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function push_back()\n";
+				"check function push_back(), access operator[]\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nChecking if v1 is empty ... " << endl;
+			"\nAccessing element v1[5] ... \n" << endl;
 
-
-		expected = "false";
-		got = v1.empty() ? "true" : "false";
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
-		if (got != expected)
-		{
-			set_console_color(RED);
-			cout << "FAILED: Vector v1 should NOT be empty\n" <<
-				"check function empty()\n";
-			set_console_color(WHITE);
-			return false;
-		}
-
-		cout <<
-			"\nAdding 3 more elements to vector v1 ... \n" << endl;
-		addRandomElementsToVector(v1, 3);
-
-		expected = "[capacity: 10, size: 6, resize factor: 5]";
-		got = getVectorString(v1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		expected = "6";
+		got = std::to_string(v1[5]);
+		cout << "Expected:" << expected << endl;
+		cout << "Got     :" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function push_back(), resize(), reserve()\n";
+				"check access operator []\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nAdding 24 more elements to vector v1 ... \n" << endl;
-		addRandomElementsToVector(v1, 24);
+			"\nAccessing element v2[9] ... \n" << endl;
 
-		expected = "[capacity: 30, size: 30, resize factor: 5]";
-		got = getVectorString(v1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		expected = "110";
+		got = std::to_string(v2[9]);
+		cout << "Expected:" << expected << endl;
+		cout << "Got     :" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check functions push_back(), resize(), reserve()\n";
+				"check access operator []\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nPopping 20 elements from vector ... \n" << endl;
-		getPoppedElementsString(v1, 20);
+			"\nAccessing element v2[10] ... \n" << endl;
 
-		expected = "[capacity: 30, size: 10, resize factor: 5]";
-		got = getVectorString(v1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		expected = "11";
+		got = std::to_string(v2[10]);
+		cout << "Expected:" << expected << endl;
+		cout << "Got     :" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function pop_back()\n";
+				"check access operator []\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nChecking if v1 is empty ... " << endl;
+			"\nAccessing element v1[-1] ... \n" << endl;
 
-		expected = "false";
-		got = v1.empty() ? "true" : "false";
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		expected = "11";
+		got = std::to_string(v2[-1]);
+		cout << "Expected:" << expected << endl;
+		cout << "Got     :" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function empty()\n";
+				"check access operator []\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nPopping 10 elements from vector ... \n" << endl;
-		getPoppedElementsString(v1, 10);
+			"\nInitializing Vector v3, using copy constructor with v1  \n" << endl;
 
-		expected = "[capacity: 30, size: 0, resize factor: 5]";
-		got = getVectorString(v1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		Vector v3(v1);
+
+		expected = "v1: 1,2,3,4,5,6,7,8,9,10\n";
+		expected += "v3: 1,2,3,4,5,6,7,8,9,10";
+		got = "v1: " + getVectorElementsString(v1) + "\nv3: " + getVectorElementsString(v3);
+		cout << "Expected:\n" << expected << endl;
+		cout << "Got     :\n" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function pop_back()\n";
+				"check copy constructor - Vector(const Vector&)\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nChecking if v1 is empty ... " << endl;
+			"\ncopying v2 to v3, using operator= (v3 = v2) ... \n" << endl;
+		v3 = v2;
 
-		expected = "true";
-		got = v1.empty() ? "true" : "false";
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+		expected = "v2: 11,22,33,44,55,66,77,88,99,110\n";
+		expected += "v3: 11,22,33,44,55,66,77,88,99,110";
+		got = "v2: " + getVectorElementsString(v2) + "\nv3: " + getVectorElementsString(v3);
+		cout << "Expected:\n" << expected << endl;
+		cout << "Got     :\n" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function empty()\n";
+				"check operator=\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nPopping one more element from vector ... \n" << endl;
-
-		expected = "ERROR -9999";
-		got = getPoppedElementsString(v1, 1);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+			"\ncalling v1.assign(999)... \n" << endl;
+		v1.assign(999);
+		expected = "v1: 999,999,999,999,999,999,999,999,999,999";
+		got = "v1: " + getVectorElementsString(v1);
+		cout << "Expected:\n" << expected << endl;
+		cout << "Got     :\n" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function pop_back()\n";
+				"check function assign()\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
 		cout <<
-			"\nInitializing Vector v2 with n=5 ... \n" << endl;
-
-		Vector v2(5);
-
-		cout <<
-			"\ncalling v2.reserve(23) ... \n" << endl;
-
-		v2.reserve(23);
-
-		expected = "[capacity: 25, size: 0, resize factor: 5]";
-		got = getVectorString(v2);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
+			"\ncalling v2.resize(15, 1234)... \n" << endl;
+		v2.resize(15, 1234);
+		expected = "v2: 11,22,33,44,55,66,77,88,99,110,1234,1234,1234,1234,1234";
+		got = "v2: " + getVectorElementsString(v2);
+		cout << "Expected:\n" << expected << endl;
+		cout << "Got     :\n" << got << endl;
 		if (got != expected)
 		{
 			set_console_color(RED);
 			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function reserve()\n";
+				"check function resize(int n,int &val)\n";
 			set_console_color(WHITE);
 			return false;
 		}
 
-		cout <<
-			"\ncalling v2.reserve(12) ... \n" << endl;
-
-		v2.reserve(12);
-
-		expected = "[capacity: 25, size: 0, resize factor: 5]";
-		got = getVectorString(v2);
-		cout << "Expected: " << expected << endl;
-		cout << "Got     : " << got << std::endl;
-		if (got != expected)
-		{
-			set_console_color(RED);
-			std::cout << "FAILED: Vector information is not as expected\n" <<
-				"check function reserve()\n";
-			set_console_color(WHITE);
-			return false;
-		}
 	}
 	catch (...)
 	{
@@ -301,7 +260,7 @@ bool test2AddElements()
 	}
 
 	set_console_color(LIGHT_GREEN);
-	std::cout << "\n########## push_back() , pop_back() , reserve() - TEST Passed!!! ##########\n\n";
+	std::cout << "\n########## operator[], resize(), assign() - TEST Passed!!! ##########\n\n";
 	set_console_color(WHITE);
 
 	return true;
@@ -312,18 +271,18 @@ int main()
 {
 	set_console_color(LIGHT_YELLOW);
 	std::cout <<
-		"########################################\n" <<
+		"###################\n" <<
 		"Exercise 3 - Vector\n" <<
-		"Part 2 - push_back, pop_back, reserve() \n" <<
-		"#########################################\n" << std::endl;
+		"Part 4 - operator[], resize(), assign() \n" <<
+		"###################\n" << std::endl;
 	set_console_color(WHITE);
 
-	bool testResult = test2AddElements();
+	bool testResult = test4();
 
 	if (testResult)
 	{
 		set_console_color(GREEN);
-		std::cout << "\n########## Ex3 Part 2 Tests Passed!!! ##########" << "\n\n";
+		std::cout << "\n########## Ex3 Part4 Tests Passed!!! ##########" << "\n\n";
 		set_console_color(WHITE);
 	}
 	else
